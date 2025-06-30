@@ -13,8 +13,6 @@ public:
     void MoveBLockLeft();
     void MoveBLockRight();
     void MoveBLockDown();
-    void PauseGame();
-    int MenuController = 0;
     Grid grid;
     bool gameOver;
     int score;

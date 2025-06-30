@@ -1,4 +1,4 @@
-#include "game.h"
+#include "game.h" // inclui o cabeçalho game.h
 #include <random> //incluido com o objetivo de gerar na tela blocos aleatórios
 
 Game::Game()
@@ -119,11 +119,6 @@ void Game::MoveBLockDown()
     }
 }
 
-void Game::PauseGame()
-{
-
-}
-
 bool Game::IsBlockOutside()
 {
     std::vector<Position> tiles = currentBlock.GetCellPositions();
@@ -193,20 +188,20 @@ void Game::UpdateScore(int linesCleared, int moveDownBlocks)
 {
     switch (linesCleared)
     {
-    case 1:
-        score += 100; // adiciona 100 pontos se uma linha for limpa
+        case 1:
+        score += 50; // adiciona 100 pontos se uma linha for limpa
         break;
-
-    case 2:
-        score += 300; // adiciona 300 pontos se duas linhas forem limpas
-
-    case 3:
-        score += 500; // adiciona 500 pontos se três linhas forem limpas
+        
+        case 2:
+        score += 100; // adiciona 300 pontos se duas linhas forem limpas
+        
+        case 3:
+        score += 200; // adiciona 500 pontos se três linhas forem limpas
         break;
-
-    default:
+        
+        default:
         break;
     }
-
+    
     score += moveDownBlocks;
 }
