@@ -60,8 +60,8 @@ void Game::ControlInput()
     int pressedKey = GetKeyPressed(); // obtém a tecla pressionada pelo player
     if (gameOver && pressedKey != 0)
     {
-        gameOver = false;
-        ResetGame();
+        gameOver = false; // se o jogo estiver acabado e uma tecla for pressionada, reinicia o jogo
+        ResetGame();     // chama o método ResetGame para reiniciar o jogo
     }
 
     switch (pressedKey)
@@ -188,20 +188,20 @@ void Game::UpdateScore(int linesCleared, int moveDownBlocks)
 {
     switch (linesCleared)
     {
-        case 1:
+    case 1:
         score += 50; // adiciona 100 pontos se uma linha for limpa
         break;
-        
-        case 2:
+
+    case 2:
         score += 100; // adiciona 300 pontos se duas linhas forem limpas
-        
-        case 3:
+
+    case 3:
         score += 200; // adiciona 500 pontos se três linhas forem limpas
         break;
-        
-        default:
+
+    default:
         break;
     }
-    
+
     score += moveDownBlocks;
 }

@@ -16,12 +16,12 @@ public:
     Grid grid;
     bool gameOver;
     int score;
+    bool IsBlockOutside();
+    bool BlockFits();
 
 private:
-    bool IsBlockOutside();
     void RotateBlock();
     void LockBlock();
-    bool BlockFits();
     void ResetGame();
     void UpdateScore(int linesCleared, int moveDownBlocks);
     std::vector<Block> blocks;
