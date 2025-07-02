@@ -49,7 +49,7 @@ public:
     OBlock()
     {
         id = 4;
-        cells[0] = {Position(0, 0), Position(0, 1), Position(1, 0), Position(1, 1)}; // quadrado, rotação irrelevante
+        cells[0] = {Position(0, 0), Position(0, 1), Position(1, 0), Position(1, 1)}; // quadrado - rotação irrelevante
         Move(0, 4);                                                                  // move 4 para a direita para que ELE fique centralizado na tela
     }
 };

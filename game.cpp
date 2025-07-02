@@ -1,14 +1,33 @@
-#include "game.h" // inclui o cabeçalho game.h
-#include <random> //incluido com o objetivo de gerar na tela blocos aleatórios
+#include "game.h"
+#include <random> // incluido para que seja possível gerar na tela blocos aleatórios
 
 Game::Game()
 {
     grid = Grid();
-    blocks = GetAllBlocks();         // inicializa o vetor de blocos com todos os blocos disponíveis
-    currentBlock = GetRandomBlock(); // seleciona um bloco aleatório para começar o jogo
-    nextBlock = GetRandomBlock();    // seleciona o próximo bloco que entrará em jogo
-    gameOver = false;                // indica que o jogo não acabou ainda
-    score = 0;                       // inicializa a pontuação do jogo como 0
+    blocks = GetAllBlocks();                                          // inicializa o vetor de blocos com todos os blocos disponíveis
+    currentBlock = GetRandomBlock();                                  // seleciona um bloco aleatório para começar o jogo
+    nextBlock = GetRandomBlock();                                     // seleciona o próximo bloco que entrará em jogo
+    gameOver = false;                                                 // indica que o jogo não acabou ainda
+    score = 0;                                                        // inicializa a pontuação do jogo como 0
+    InitAudioDevice();                                                // inicia o áudio do jogo
+    music = LoadMusicStream("sounds/minecraft_music.mp3");            // carrega a música de fundo do jogo
+    PlayMusicStream(music);                                           // inicia a música de fundo do jogo
+    oneTwoRowsClearedSound = LoadSound("sounds/limpou1_2linhas.mp3"); // carrega o som para uma linha limpa
+    threeRowsClearedSound = LoadSound("sounds/limpou3linhas.mp3");    // carrega o som para quatro linhas limpas
+    menuSelectSound = LoadSound("sounds/menuselecao.mp3");            // carrega o som de seleção de menu
+    menuExitSound = LoadSound("sounds/voltarmenu.mp3");               // carrega o som de saída de menu
+    gameOverSound = LoadSound("sounds/gameover.mp3");                 // carrega o som de fim de jogo
+}
+
+Game::~Game()
+{
+    UnloadSound(oneTwoRowsClearedSound); // descarrega o som de uma linha limpa
+    UnloadSound(threeRowsClearedSound);  // descarrega o som de quatro linhas limpas
+    UnloadSound(menuSelectSound);        // descarrega o som de seleção de menu
+    UnloadSound(menuExitSound);          // descarrega o som de saída de menu
+    UnloadSound(gameOverSound);          // descarrega o som de fim de jogo
+    UnloadMusicStream(music);            // descarrega a música de fundo do jogo
+    CloseAudioDevice();                  // para o áudio do jogo quando o objeto Game é destruído
 }
 
 Block Game::GetRandomBlock()
@@ -30,8 +49,8 @@ std::vector<Block> Game::GetAllBlocks()
 
 void Game::Draw()
 {
-    grid.Draw(); // desenha a grade na tela
-    if (BlockFits() == true)
+    grid.Draw();             // desenha a grade na tela
+    if (BlockFits() == true) // verifica se o bloco atual cabe na grade
     {
         DrawRectangleRounded({350, 81, 130, 130}, 0, 4, menuGray); // desenha um retângulo para o proximo bloco
         currentBlock.Draw(31, 81);                                 // desenha o bloco atual na tela
@@ -42,7 +61,7 @@ void Game::Draw()
             break;
 
         case 4:
-            nextBlock.Draw(266, 115); // bloco O6
+            nextBlock.Draw(266, 115); // bloco O
             break;
 
         default:
@@ -61,7 +80,6 @@ void Game::ControlInput()
     if (gameOver && pressedKey != 0)
     {
         gameOver = false; // se o jogo estiver acabado e uma tecla for pressionada, reinicia o jogo
-        ResetGame();     // chama o método ResetGame para reiniciar o jogo
     }
 
     switch (pressedKey)
@@ -87,7 +105,7 @@ void Game::MoveBLockLeft()
     if (!gameOver)
     {
         currentBlock.Move(0, -1);
-        if (IsBlockOutside() || BlockFits() == false)
+        if (IsBlockOutside() || BlockFits() == false) // verifica se o bloco atual está fora da grade após o movimento
         {
             currentBlock.Move(0, 1); // se o bloco estiver fora da grade ou não couber na grade, desfaz o movimento
         }
@@ -121,8 +139,8 @@ void Game::MoveBLockDown()
 
 bool Game::IsBlockOutside()
 {
-    std::vector<Position> tiles = currentBlock.GetCellPositions();
-    for (Position item : tiles)
+    std::vector<Position> tiles = currentBlock.GetCellPositions(); // obtem as posições do bloco atual
+    for (Position item : tiles)                                    // percorre todas as posições do bloco atual
     {
         if (grid.IsCellOutside(item.row, item.col)) // verifica se alguma célula do bloco atual está fora da grade
         {
@@ -134,9 +152,10 @@ bool Game::IsBlockOutside()
 
 void Game::RotateBlock()
 {
-    if (!gameOver)
+    if (!gameOver) // verifica se o jogo não acabou
     {
-        currentBlock.Rotate();
+        currentBlock.Rotate(); // rotaciona o bloco atual
+
         if (IsBlockOutside() || BlockFits() == false) // verifica se o bloco atual está fora da grade após a rotação
         {
             currentBlock.UndoRotation(); // se o bloco estiver fora da grade, desfaz a rotação
@@ -146,8 +165,8 @@ void Game::RotateBlock()
 
 void Game::LockBlock()
 {
-    std::vector<Position> tiles = currentBlock.GetCellPositions();
-    for (Position item : tiles) // percorre todas as posições do bloco atual
+    std::vector<Position> tiles = currentBlock.GetCellPositions(); // obtem as posições do bloco atual
+    for (Position item : tiles)                                    // percorre todas as posições do bloco atual
     {
         grid.grid[item.row][item.col] = currentBlock.id; // preenche a grade com o id do bloco atual
     }
@@ -164,7 +183,7 @@ void Game::LockBlock()
 bool Game::BlockFits()
 {
     std::vector<Position> tiles = currentBlock.GetCellPositions(); // obtem as posições do bloco atual
-    for (Position item : tiles)
+    for (Position item : tiles)                                    // percorre todas as posições do bloco atual
     {
         if (grid.IsCellEmpty(item.row, item.col) == false) // se a célula não estiver vazia
         {
@@ -186,22 +205,34 @@ void Game::ResetGame()
 
 void Game::UpdateScore(int linesCleared, int moveDownBlocks)
 {
-    switch (linesCleared)
+    if (!gameOver)
     {
-    case 1:
-        score += 50; // adiciona 100 pontos se uma linha for limpa
-        break;
+        switch (linesCleared) // verifica quantas linhas foram limpas
+        {
+        case 1:
+            score += 50;                       // adiciona 50 pontos se uma linha for limpa
+            PlaySound(oneTwoRowsClearedSound); // toca o som de uma ou duas linhas limpas
+            break;
+        case 2:
+            score += 100;                      // adiciona 100 pontos se duas linhas forem limpas
+            PlaySound(oneTwoRowsClearedSound); // toca o som de uma ou duas linhas limpas
+            break;
+        case 3:
+            score += 200;                     // adiciona 200 pontos se três linhas forem limpas
+            PlaySound(threeRowsClearedSound); // toca o som de três ou mais linhas limpas
+            break;
+        case 4:
+            score += 200;                     // adiciona 200 pontos se três linhas forem limpas
+            PlaySound(threeRowsClearedSound); // toca o som de três ou mais linhas limpas
+            break;
+        case 5:
+            score += 200;                     // adiciona 200 pontos se três linhas forem limpas
+            PlaySound(threeRowsClearedSound); // toca o som de três ou mais linhas limpas
+            break;
+        default:
+            break; // se nenhuma linha for limpa, não faz nada
+        }
 
-    case 2:
-        score += 100; // adiciona 300 pontos se duas linhas forem limpas
-
-    case 3:
-        score += 200; // adiciona 500 pontos se três linhas forem limpas
-        break;
-
-    default:
-        break;
+        score += moveDownBlocks;
     }
-
-    score += moveDownBlocks;
 }

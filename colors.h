@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <vector>
 
+// cores que serão possivelmente usadas no jogo
 extern const Color darkGray;
 extern const Color cyan;
 extern const Color magenta;

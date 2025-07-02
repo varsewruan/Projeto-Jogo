@@ -20,5 +20,5 @@ private:                                    // partes privadas do código, acess
     int numRows;                            // numero de linhas
     int numCols;                            // numero de colunas
     int cellSize;                           // tamanho dos bloquinhos em px
-    std::vector<Color> colors;
+    std::vector<Color> colors;              // para armazenar as cores das células do bloco
 };
